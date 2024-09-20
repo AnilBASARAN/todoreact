@@ -1,71 +1,63 @@
 
 import './App.css';
-import {useState,useEffect} from "react";
+import { useState, useEffect } from "react";
 import TodoItem from "./TodoItem";
 import * as TodoService from "./services/todo";
 
-
 const App = () => {
+  const [todos, setTodos] = useState([]);
+  const [creating, setCreating] = useState(false);
+  const [createText, setCreateText] = useState("");
 
-  const [todos,setTodos] = useState([]);
-  const [isCreating,setIsCreating]= useState(false);
-  const [creatingText,setCreatingText] = useState("");
-
-  const fetchTodos = async ()=>{
-  
+  const fetchTodos = async () => {
     const response = await TodoService.getAllTodos();
-
-  
     setTodos(await response.json());
-    }
+  };
 
-  useEffect(()=>{
+  useEffect(() => {
     fetchTodos();
-  },[]);
+  }, []);
 
-  const allTodos = todos.map(todo=> <TodoItem todo={todo} key={todo.id} />)
-  
-  return <div className="bg-gradient-to-br min-h-screen from-blue-600 to-green-300 flex justify-center items-start ">
-   
-    <div className="bg-white p-2 w-full max-w-sm flex flex-col justify-center  m-20" >
-
-      {allTodos}
-
-      {
-        isCreating &&
-        (
-
-        <form
-          className=" flex flex-col"
-          onSubmit={ async(e)=>{
-            e.preventDefault();
-           await TodoService.addTodo(creatingText);
-            setIsCreating(false);
-            setCreatingText("");
-            fetchTodos();
-          }}
+  return (
+    <div className="flex items-start justify-center min-h-screen bg-gradient-to-br from-violet-600 to-orange-400">
+      <div className="flex flex-col w-full max-w-sm p-4 mt-40 rounded-md bg-stone-100">
+        {todos.map((todo) => (
+          <TodoItem fetch={fetchTodos} todo={todo} key={todo.id} />
+        ))}
+        {creating ? (
+          <form
+            className="flex flex-col"
+            onSubmit={async (e) => {
+              e.preventDefault();
+              await TodoService.createTodo(createText);
+              setCreateText("");
+              setCreating(false);
+              fetchTodos();
+            }}
           >
-    
-      <input
-        value={creatingText}
-        onChange={(e)=>{
-          setCreatingText(e.target.value);
-        }}
-        placeholder ="enter to do"
-        type="text"
-        className="text-blue-600 my-2 p-1 bg-stone-200 w-full rounded-lg"/>
-    
-    <button className="w-full  bg-blue-400 p-2 mt-1 rounded-lg">Save</button>
-        </form>
-        ) 
-      }
-
-      
-      <button
-        onClick={()=>setIsCreating(true)}
-        className="hover:bg-stone-200 text-stone-500 rounded-lg p-1 m-1" ><i className="fa-solid pr-1 fa-plus text-stone-600"></i>Add Button</button>
+            <input
+              className="p-3 my-2 bg-white border border-gray-200 rounded-md text-stone-500"
+              placeholder="enter your todo"
+              value={createText}
+              onChange={(e) => setCreateText(e.target.value)}
+            />
+            <button className="py-1 mt-4 text-white rounded-md bg-sky-400 hover:bg-sky-500">
+              <i className="mr-2 text-xl fa-solid fa-floppy-disk"></i>
+              Save
+            </button>
+          </form>
+        ) : (
+          <button
+            className="py-1 mt-4 rounded-md text-stone-400 hover:bg-stone-200"
+            onClick={() => setCreating(true)}
+          >
+            <i className="mr-2 text-xl fa-solid fa-plus"></i>
+            Add Todo
+          </button>
+        )}
+      </div>
     </div>
-  </div>
+  );
 };
 
 export default App;
